@@ -60,7 +60,7 @@ export default function ChangelogModal({ isOpen, onClose }) {
           <h2 className="text-lg font-semibold text-text-main">Change Log</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-text-muted hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            className="p-1.5 rounded-none text-text-muted hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             aria-label="Close"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>

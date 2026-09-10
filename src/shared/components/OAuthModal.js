@@ -689,14 +689,14 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
               <button
                 type="button"
                 onClick={() => { setAuthMode("browser"); setError(null); setStep("waiting"); startOAuthFlow(); }}
-                className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-colors ${authMode === "browser" ? "border-primary bg-primary/10 text-primary" : "border-border text-text-muted hover:text-primary"}`}
+                className={`flex-1 rounded-none border px-3 py-2 text-sm transition-colors ${authMode === "browser" ? "border-primary bg-primary/10 text-primary" : "border-border text-text-muted hover:text-primary"}`}
               >
                 🌐 Sign in with browser
               </button>
               <button
                 type="button"
                 onClick={() => { setAuthMode("paste-token"); setError(null); setStep("input"); }}
-                className={`flex-1 rounded-lg border px-3 py-2 text-sm transition-colors ${authMode === "paste-token" ? "border-primary bg-primary/10 text-primary" : "border-border text-text-muted hover:text-primary"}`}
+                className={`flex-1 rounded-none border px-3 py-2 text-sm transition-colors ${authMode === "paste-token" ? "border-primary bg-primary/10 text-primary" : "border-border text-text-muted hover:text-primary"}`}
               >
                 🔑 Paste token
               </button>
@@ -705,7 +705,7 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
             {authMode === "browser" && (
               <>
                 {step === "waiting" && (
-                  <div className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg bg-sidebar/50">
+                  <div className="flex items-center gap-2 px-3 py-2 border border-border rounded-none bg-sidebar/50">
                     <span className="material-symbols-outlined text-base text-primary animate-spin">progress_activity</span>
                     <span className="text-sm">Waiting for browser authorization…</span>
                   </div>
@@ -733,7 +733,7 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
             {authMode === "paste-token" && (
               <div className="space-y-3">
                 {ideStatus && !ideStatus.installed && (
-                  <div className={`px-3 py-2 rounded-lg text-sm ${PASTE_TOKEN_PROVIDERS[provider].ideOptional ? "bg-blue-500/10 text-blue-700 dark:text-blue-300" : "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300"}`}>
+                  <div className={`px-3 py-2 rounded-none text-sm ${PASTE_TOKEN_PROVIDERS[provider].ideOptional ? "bg-blue-500/10 text-blue-700 dark:text-blue-300" : "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300"}`}>
                     {PASTE_TOKEN_PROVIDERS[provider].ideName} IDE not detected.
                     {PASTE_TOKEN_PROVIDERS[provider].ideOptional
                       ? " You can still grab the token from DevTools."
@@ -760,7 +760,7 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
         {(step === "waiting" || step === "input") && !isDeviceCode && !PROXY_OAUTH_PROVIDERS.has(provider) && (
           <>
             {/* Option A: Auto via popup */}
-            <div className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg bg-sidebar/50">
+            <div className="flex items-center gap-2 px-3 py-2 border border-border rounded-none bg-sidebar/50">
               <span className="material-symbols-outlined text-base text-primary animate-spin">
                 progress_activity
               </span>
@@ -828,7 +828,7 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
               <p className="text-sm text-text-muted mb-4">
                 Visit the login URL below and authorize:
               </p>
-              <div className="bg-sidebar p-4 rounded-lg mb-4">
+              <div className="bg-sidebar p-4 rounded-none mb-4">
                 <p className="text-xs text-text-muted mb-1">Login URL</p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 text-sm break-all">{deviceLoginUrl}</code>
@@ -850,7 +850,7 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
                   </Button>
                 </div>
               </div>
-              <div className="bg-primary/10 p-4 rounded-lg">
+              <div className="bg-primary/10 p-4 rounded-none">
                 <p className="text-xs text-text-muted mb-1">Your Code</p>
                 <div className="flex items-center justify-center gap-2">
                   <p className="text-2xl font-mono font-bold text-primary">{deviceData.user_code}</p>

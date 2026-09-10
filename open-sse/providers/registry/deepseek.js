@@ -18,7 +18,8 @@ export default {
       apiKeyUrl: "https://platform.deepseek.com/api_keys",
     },
   },
-  category: "apikey",
+  category: "freeTier",
+  hasFree: true,
   transport: {
     baseUrl: "https://api.deepseek.com/chat/completions",
     validateUrl: "https://api.deepseek.com/models",

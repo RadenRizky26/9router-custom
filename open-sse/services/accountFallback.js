@@ -1,10 +1,9 @@
 import { ERROR_RULES, BACKOFF_CONFIG, TRANSIENT_COOLDOWN_MS } from "../config/errorConfig.js";
+import { getCircuitBreaker } from "../../src/shared/utils/circuitBreaker.js";
 
 /**
  * Calculate exponential backoff cooldown for rate limits (429)
  * Level 1: 1s, Level 2: 2s, Level 3: 4s... → max 4 min
- * @param {number} backoffLevel - Current backoff level
- * @returns {number} Cooldown in milliseconds
  */
 export function getQuotaCooldown(backoffLevel = 0) {
   const level = Math.max(0, backoffLevel - 1);
@@ -15,10 +14,6 @@ export function getQuotaCooldown(backoffLevel = 0) {
 /**
  * Check if error should trigger account fallback (switch to next account)
  * Config-driven: matches ERROR_RULES top-to-bottom (text rules first, then status)
- * @param {number} status - HTTP status code
- * @param {string} errorText - Error message text
- * @param {number} backoffLevel - Current backoff level for exponential backoff
- * @returns {{ shouldFallback: boolean, cooldownMs: number, newBackoffLevel?: number }}
  */
 export function checkFallbackError(status, errorText, backoffLevel = 0) {
   const lowerError = errorText
@@ -26,7 +21,6 @@ export function checkFallbackError(status, errorText, backoffLevel = 0) {
     : "";
 
   for (const rule of ERROR_RULES) {
-    // Text-based rule: match substring in error message
     if (rule.text && lowerError && lowerError.includes(rule.text)) {
       if (rule.backoff) {
         const newLevel = Math.min(backoffLevel + 1, BACKOFF_CONFIG.maxLevel);
@@ -34,8 +28,6 @@ export function checkFallbackError(status, errorText, backoffLevel = 0) {
       }
       return { shouldFallback: true, cooldownMs: rule.cooldownMs };
     }
-
-    // Status-based rule: match HTTP status code
     if (rule.status && rule.status === status) {
       if (rule.backoff) {
         const newLevel = Math.min(backoffLevel + 1, BACKOFF_CONFIG.maxLevel);
@@ -44,31 +36,18 @@ export function checkFallbackError(status, errorText, backoffLevel = 0) {
       return { shouldFallback: true, cooldownMs: rule.cooldownMs };
     }
   }
-
-  // Default: transient cooldown for any unmatched error
   return { shouldFallback: true, cooldownMs: TRANSIENT_COOLDOWN_MS };
 }
 
-/**
- * Check if account is currently unavailable (cooldown not expired)
- */
 export function isAccountUnavailable(unavailableUntil) {
   if (!unavailableUntil) return false;
   return new Date(unavailableUntil).getTime() > Date.now();
 }
 
-/**
- * Calculate unavailable until timestamp
- */
 export function getUnavailableUntil(cooldownMs) {
   return new Date(Date.now() + cooldownMs).toISOString();
 }
 
-/**
- * Get the earliest rateLimitedUntil from a list of accounts
- * @param {Array} accounts - Array of account objects with rateLimitedUntil
- * @returns {string|null} Earliest rateLimitedUntil ISO string, or null
- */
 export function getEarliestRateLimitedUntil(accounts) {
   let earliest = null;
   const now = Date.now();
@@ -82,11 +61,6 @@ export function getEarliestRateLimitedUntil(accounts) {
   return new Date(earliest).toISOString();
 }
 
-/**
- * Format rateLimitedUntil to human-readable "reset after Xm Ys"
- * @param {string} rateLimitedUntil - ISO timestamp
- * @returns {string} e.g. "reset after 2m 30s"
- */
 export function formatRetryAfter(rateLimitedUntil) {
   if (!rateLimitedUntil) return "";
   const diffMs = new Date(rateLimitedUntil).getTime() - Date.now();
@@ -102,21 +76,13 @@ export function formatRetryAfter(rateLimitedUntil) {
   return `reset after ${parts.join(" ")}`;
 }
 
-/** Prefix for model lock flat fields on connection record */
 export const MODEL_LOCK_PREFIX = "modelLock_";
-
-/** Special key used when no model is known (account-level lock) */
 export const MODEL_LOCK_ALL = `${MODEL_LOCK_PREFIX}__all`;
 
-/** Build the flat field key for a model lock */
 export function getModelLockKey(model) {
   return model ? `${MODEL_LOCK_PREFIX}${model}` : MODEL_LOCK_ALL;
 }
 
-/**
- * Check if a model lock on a connection is still active.
- * Reads flat field `modelLock_${model}` (or `modelLock___all` when model=null).
- */
 export function isModelLockActive(connection, model) {
   const key = getModelLockKey(model);
   const expiry = connection[key] || connection[MODEL_LOCK_ALL];
@@ -124,10 +90,6 @@ export function isModelLockActive(connection, model) {
   return new Date(expiry).getTime() > Date.now();
 }
 
-/**
- * Get earliest active model lock expiry across all modelLock_* fields.
- * Used for UI cooldown display.
- */
 export function getEarliestModelLockUntil(connection) {
   if (!connection) return null;
   let earliest = null;
@@ -141,17 +103,11 @@ export function getEarliestModelLockUntil(connection) {
   return earliest ? new Date(earliest).toISOString() : null;
 }
 
-/**
- * Build update object to set a model lock on a connection.
- */
 export function buildModelLockUpdate(model, cooldownMs) {
   const key = getModelLockKey(model);
   return { [key]: new Date(Date.now() + cooldownMs).toISOString() };
 }
 
-/**
- * Build update object to clear all model locks on a connection.
- */
 export function buildClearModelLocksUpdate(connection) {
   const cleared = {};
   for (const key of Object.keys(connection)) {
@@ -160,56 +116,66 @@ export function buildClearModelLocksUpdate(connection) {
   return cleared;
 }
 
-/**
- * Filter available accounts (not in cooldown)
- */
 export function filterAvailableAccounts(accounts, excludeId = null) {
   const now = Date.now();
-  return accounts.filter(acc => {
+  return accounts.filter((acc) => {
     if (excludeId && acc.id === excludeId) return false;
     if (acc.rateLimitedUntil) {
       const until = new Date(acc.rateLimitedUntil).getTime();
       if (until > now) return false;
     }
+    // Circuit breaker gate — skip if provider is OPEN
+    if (acc.provider) {
+      const breaker = getCircuitBreaker(acc.provider);
+      if (!breaker.canExecute()) return false;
+    }
     return true;
   });
 }
 
-/**
- * Reset account state when request succeeds
- * Clears cooldown and resets backoff level to 0
- * @param {object} account - Account object
- * @returns {object} Updated account with reset state
- */
 export function resetAccountState(account) {
   if (!account) return account;
+  // Reset circuit breaker on success
+  if (account.provider) {
+    try { getCircuitBreaker(account.provider).onSuccess(); } catch {}
+  }
   return {
     ...account,
     rateLimitedUntil: null,
     backoffLevel: 0,
     lastError: null,
-    status: "active"
+    status: "active",
   };
 }
 
-/**
- * Apply error state to account
- * @param {object} account - Account object
- * @param {number} status - HTTP status code
- * @param {string} errorText - Error message
- * @returns {object} Updated account with error state
- */
 export function applyErrorState(account, status, errorText) {
   if (!account) return account;
-
+  // Feed circuit breaker — 429/5xx + overloaded count as failure
+  if (status === 429 || status === 529 || status >= 500) {
+    try { getCircuitBreaker(account.provider || "default").onFailure(); } catch {}
+  }
   const backoffLevel = account.backoffLevel || 0;
   const { cooldownMs, newBackoffLevel } = checkFallbackError(status, errorText, backoffLevel);
-
   return {
     ...account,
     rateLimitedUntil: cooldownMs > 0 ? getUnavailableUntil(cooldownMs) : null,
     backoffLevel: newBackoffLevel ?? backoffLevel,
     lastError: { status, message: errorText, timestamp: new Date().toISOString() },
-    status: "error"
+    status: "error",
   };
+}
+
+// Parse Retry-After header / body hint → cooldown ms (OmniRoute-style)
+export function parseRetryHint(retryAfterHeader, bodyText) {
+  if (retryAfterHeader) {
+    const secs = Number.parseInt(retryAfterHeader, 10);
+    if (Number.isFinite(secs)) return secs * 1000;
+    const dateMs = Date.parse(retryAfterHeader);
+    if (Number.isFinite(dateMs)) return Math.max(0, dateMs - Date.now());
+  }
+  if (bodyText) {
+    const m = String(bodyText).match(/retry\s+after\s+(\d+)\s*s/i) || String(bodyText).match(/please retry in\s+([\d.]+)\s*s/i);
+    if (m) return Math.ceil(Number.parseFloat(m[1]) * 1000);
+  }
+  return null;
 }

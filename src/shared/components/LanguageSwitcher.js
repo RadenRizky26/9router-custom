@@ -118,7 +118,7 @@ export default function LanguageSwitcher({ className = "", isOpen: controlledOpe
         <button
           onClick={() => setIsOpen(!isOpen)}
           disabled={isPending}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-text-muted hover:text-text-main hover:bg-surface/60 transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-none text-text-muted hover:text-text-main hover:bg-surface/60 transition-colors"
           title="Language"
           data-i18n-skip="true"
         >
@@ -147,7 +147,7 @@ export default function LanguageSwitcher({ className = "", isOpen: controlledOpe
               <h2 className="text-lg font-semibold text-text-main">Select Language</h2>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg text-text-muted hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                className="p-1.5 rounded-none text-text-muted hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 aria-label="Close"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
@@ -165,7 +165,7 @@ export default function LanguageSwitcher({ className = "", isOpen: controlledOpe
                       key={item}
                       onClick={() => handleSetLocale(item)}
                       disabled={isPending}
-                      className={`flex flex-col items-center justify-start gap-1 px-2 py-3 rounded-lg text-xs font-medium transition-colors w-full ${
+                      className={`flex flex-col items-center justify-start gap-1 px-2 py-3 rounded-none text-xs font-medium transition-colors w-full ${
                         active
                           ? "bg-primary/15 text-primary ring-2 ring-primary"
                           : "text-text-main hover:bg-black/5 dark:hover:bg-white/5"

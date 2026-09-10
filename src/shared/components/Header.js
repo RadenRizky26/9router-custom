@@ -109,7 +109,7 @@ const getPageInfo = (pathname) => {
   if (pathname.includes("/mitm"))
     return {
       title: "MITM Proxy",
-      description: "Intercept CLI tool traffic and route through 9Router",
+      description: "Intercept CLI tool traffic and route through SryRouter",
       icon: "security",
       breadcrumbs: [],
     };
@@ -137,7 +137,7 @@ const getPageInfo = (pathname) => {
   if (pathname.includes("/skills"))
     return {
       title: "Agent Skills",
-      description: "Copy a link and paste to your AI to use 9Router — no install needed",
+      description: "Copy a link and paste to your AI to use SryRouter — no install needed",
       icon: "extension",
       breadcrumbs: [],
     };
@@ -227,20 +227,20 @@ export default function Header({ onMenuClick, showMenuButton = true }) {
   };
 
   return (
-    <header className="shrink-0 flex items-center justify-between gap-3 px-4 lg:px-8 pt-3 pb-2 border-b border-border-subtle bg-surface/60 backdrop-blur-xl lg:bg-transparent lg:backdrop-blur-none z-20">
+    <header className="shrink-0 flex items-center justify-between gap-3 px-4 lg:px-8 pt-3 pb-3 border-b-4 border-black bg-white dark:bg-zinc-900 z-20">
       {/* Mobile menu button */}
       <div className="flex items-center gap-3 lg:hidden shrink-0">
         {showMenuButton && (
           <button
             onClick={onMenuClick}
-            className="text-text-main hover:text-primary transition-colors"
+            className="text-text-main hover:bg-brand-500/20 p-1.5 transition-colors border-2 border-transparent hover:border-black"
           >
             <span className="material-symbols-outlined">menu</span>
           </button>
         )}
       </div>
 
-      {/* Page title with breadcrumbs */}
+      {/* Page title */}
       <div className="flex flex-col min-w-0 flex-1">
         {breadcrumbs.length > 0 ? (
           <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ export default function Header({ onMenuClick, showMenuButton = true }) {
                 {crumb.href ? (
                   <Link
                     href={crumb.href}
-                    className="text-text-muted hover:text-primary transition-colors"
+                    className="text-black font-bold uppercase tracking-widest text-[11px] hover:underline"
                   >
                     {crumb.label}
                   </Link>
@@ -268,11 +268,10 @@ export default function Header({ onMenuClick, showMenuButton = true }) {
                         src={crumb.image}
                         alt={crumb.label}
                         size={28}
-                        className="object-contain rounded max-w-[28px] max-h-[28px]"
-                        fallbackText={crumb.label.slice(0, 2).toUpperCase()}
+                        className="object-contain rounded-none border-2 border-black max-w-[28px] max-h-[28px]"
                       />
                     )}
-                    <h1 className="text-base lg:text-2xl font-semibold text-text-main tracking-tight truncate">
+                    <h1 className="text-xl lg:text-3xl font-black uppercase tracking-tighter italic text-text-main">
                       {translate(crumb.label)}
                     </h1>
                   </div>
@@ -282,18 +281,18 @@ export default function Header({ onMenuClick, showMenuButton = true }) {
           </div>
         ) : title ? (
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {icon && (
-                <span className="material-symbols-outlined text-primary text-xl lg:text-2xl">
+                <span className="material-symbols-outlined text-brand-500 text-2xl border-2 border-black p-1 bg-black">
                   {icon}
                 </span>
               )}
-              <h1 className="text-base lg:text-2xl font-semibold tracking-tight truncate">
+              <h1 className="text-xl lg:text-3xl font-black uppercase tracking-tighter italic text-text-main">
                 {translate(title)}
               </h1>
             </div>
             {description && (
-              <p className="hidden lg:block text-sm text-text-muted truncate">
+              <p className="hidden lg:block text-[11px] font-bold uppercase tracking-widest text-text-muted mt-1">
                 {translate(description)}
               </p>
             )}
@@ -302,31 +301,35 @@ export default function Header({ onMenuClick, showMenuButton = true }) {
       </div>
 
       {/* Right actions */}
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="hidden lg:flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest bg-brand-500 text-black px-2 py-1 border-2 border-black">
+          <span className="material-symbols-outlined text-[14px]">bolt</span>
+          <span>COMPRESS</span>
+        </div>
+        
         {displayName && (loginMethod === "OIDC" || loginMethod === "SAML") && (
           <div
-            className="hidden sm:flex items-center max-w-[220px] px-3 py-1.5 rounded-full border border-border bg-surface/70 text-xs text-text-muted truncate"
+            className="hidden sm:flex items-center max-w-[180px] px-2 py-1 border-2 border-black text-[10px] font-bold uppercase tracking-widest truncate"
             title={displayName}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1.5 text-primary">person</span>
-            <span className="truncate">{displayName}</span>
-            <span className="ml-2 shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-              {loginMethod}
-            </span>
+            {displayName}
           </div>
         )}
+        
         <HeaderSearch />
+        
         <button
           onClick={() => setDonateOpen(true)}
-          className="flex items-center gap-1.5 px-3 h-8 rounded-lg border border-pink-500/30 bg-pink-500/10 text-pink-600 dark:text-pink-400 hover:bg-pink-500/20 transition-colors text-sm font-medium"
+          className="flex items-center gap-1.5 px-3 h-9 border-2 border-black bg-white hover:bg-black hover:text-white transition-all text-sm font-black uppercase tracking-widest"
           aria-label="Donate"
         >
           <span className="material-symbols-outlined text-[18px]">volunteer_activism</span>
           <span className="hidden sm:inline">Donate</span>
         </button>
-        <ThemeToggle />
-        <HeaderLanguage />
-        <HeaderMenu onLogout={handleLogout} />
+        
+        <div className="border-2 border-black p-0.5"><ThemeToggle /></div>
+        <div className="border-2 border-black p-0.5"><HeaderLanguage /></div>
+        <div className="border-2 border-black p-0.5"><HeaderMenu onLogout={handleLogout} /></div>
       </div>
       <DonateModal isOpen={donateOpen} onClose={() => setDonateOpen(false)} />
     </header>
@@ -351,7 +354,7 @@ function HeaderSearch() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
-        className="w-full h-8 pl-7 pr-7 rounded-lg border border-border bg-surface/60 text-sm focus:outline-none focus:border-primary/50 transition-colors"
+        className="w-full h-8 pl-7 pr-7 rounded-none border border-border bg-surface/60 text-sm focus:outline-none focus:border-primary/50 transition-colors"
       />
       {query && (
         <button

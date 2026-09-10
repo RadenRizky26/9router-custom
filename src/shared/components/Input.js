@@ -20,7 +20,7 @@ export default function Input({
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       {label && (
-        <label className="text-sm font-medium text-text-main">
+        <label className="text-[10px] font-black uppercase tracking-widest text-black dark:text-white">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -38,9 +38,9 @@ export default function Input({
           onChange={onChange}
           disabled={disabled}
           className={cn(
-            "w-full py-2.5 px-3 text-sm text-text-main bg-surface-2 rounded-[10px]",
-            "border border-transparent placeholder-text-muted/70",
-            "focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500/40",
+            "w-full py-2.5 px-3 text-sm text-black dark:text-white bg-white dark:bg-zinc-900 rounded-none",
+            "border-2 border-black placeholder:text-black/40 dark:placeholder:text-white/40",
+            "focus:outline-none focus:border-brand-500 focus:bg-brand-500/5",
             "transition-all duration-150 ease-out disabled:opacity-50 disabled:cursor-not-allowed",
             // iOS zoom fix
             "text-[16px] sm:text-sm",

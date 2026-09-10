@@ -50,7 +50,7 @@ export default function Drawer({
       {/* Drawer panel */}
       <div className={cn(
         "absolute right-0 top-0 h-full bg-surface flex flex-col",
-        "shadow-[var(--shadow-elev)]",
+        "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]",
         "slide-in-right",
         "border-l border-border-subtle",
         widths[width] || widths.md,
@@ -66,7 +66,7 @@ export default function Drawer({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-[10px] text-text-muted hover:bg-surface-2 hover:text-text-main transition-colors"
+            className="p-1.5 rounded-none text-text-muted hover:bg-surface-2 hover:text-text-main transition-colors"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>

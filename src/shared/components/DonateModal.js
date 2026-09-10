@@ -51,7 +51,7 @@ export default function DonateModal({ isOpen, onClose }) {
           </h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-text-muted hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            className="p-1.5 rounded-none text-text-muted hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
             aria-label="Close"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
@@ -105,7 +105,7 @@ function DonateChannelCard({ channel }) {
         <img
           src={qr}
           alt={`${label} QR`}
-          className="w-full max-w-[180px] aspect-square object-contain rounded-lg bg-white p-1"
+          className="w-full max-w-[180px] aspect-square object-contain rounded-none bg-white p-1"
         loading="lazy"
         decoding="async"
         />
@@ -121,7 +121,7 @@ function DonateChannelCard({ channel }) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium text-white hover:opacity-90 transition-opacity"
+          className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-none text-sm font-medium text-white hover:opacity-90 transition-opacity"
           style={{ backgroundColor: color }}
         >
           Open

@@ -14,7 +14,8 @@ export default {
     deprecated: true,
     deprecationNotice: "RISK_NOTICE",
   },
-  category: "oauth",
+  category: "freeTier",
+  hasFree: true,
   transport: {
     baseUrl: "https://api.githubcopilot.com/chat/completions",
     responsesUrl: "https://api.githubcopilot.com/responses",

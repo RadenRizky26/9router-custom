@@ -13,7 +13,8 @@ export default {
       apiKeyUrl: "https://console.groq.com/keys",
     },
   },
-  category: "apikey",
+  category: "freeTier",
+  hasFree: true,
   transport: {
     baseUrl: "https://api.groq.com/openai/v1/chat/completions",
     validateUrl: "https://api.groq.com/openai/v1/models",

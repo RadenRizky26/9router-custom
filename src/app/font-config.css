@@ -1,0 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+
+@theme inline {
+  --font-sans: 'Source Sans 3', system-ui, sans-serif;
+  --font-heading: 'Lexend', sans-serif;
+}

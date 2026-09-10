@@ -20,7 +20,8 @@ export default {
       signupUrl: "https://www.kimi.com/code",
     },
   },
-  category: "oauth",
+  category: "freeTier",
+  hasFree: true,
   authModes: ["oauth", "apikey"],
   hasOAuth: true,
   transport: {

@@ -6,6 +6,8 @@ import { checkFallbackError, formatRetryAfter } from "./accountFallback.js";
 import { unavailableResponse } from "../utils/error.js";
 import { getCapabilitiesForModel } from "../providers/capabilities.js";
 import { extractTextContent } from "../translator/formats/gemini.js";
+import { recordComboRequest, getModelMetrics } from "./comboMetrics.js";
+import { getCircuitBreaker } from "../../src/shared/utils/circuitBreaker.js";
 
 // Hard capabilities = input modalities; missing one drops request data (e.g. image
 // stripped). Must be prioritized. Soft (e.g. search) only degrades a feature.
@@ -284,6 +286,16 @@ export async function handleComboChat({ body, models, handleSingleModel, log, co
   // Auto-switch: float models that satisfy the request's required capabilities to the front.
   if (autoSwitch) {
     const required = detectRequiredCapabilities(body);
+    // Apply auto-scoring: rank by success rate and latency
+    rotatedModels.sort((a, b) => {
+      const ma = getModelMetrics(a);
+      const mb = getModelMetrics(b);
+      // Score: successRate (0.7) + latencyInverse (0.3)
+      const scoreA = ma.successRate * 0.7 + (ma.avgLatencyMs > 0 ? 1000 / ma.avgLatencyMs : 0) * 0.3;
+      const scoreB = mb.successRate * 0.7 + (mb.avgLatencyMs > 0 ? 1000 / mb.avgLatencyMs : 0) * 0.3;
+      return scoreB - scoreA;
+    });
+
     if (required.size > 0) {
       const reordered = reorderByCapabilities(rotatedModels, required);
       if (reordered[0] !== rotatedModels[0]) {
@@ -299,16 +311,31 @@ export async function handleComboChat({ body, models, handleSingleModel, log, co
 
   for (let i = 0; i < rotatedModels.length; i++) {
     const modelStr = rotatedModels[i];
+    const tStart = Date.now();
+    
+    // Circuit breaker check
+    const breaker = getCircuitBreaker(modelStr.split("/")[0] || "default");
+    if (!breaker.canExecute()) {
+        log.warn("COMBO", `Skipping model ${modelStr} — circuit OPEN`);
+        continue;
+    }
+
     log.info("COMBO", `Trying model ${i + 1}/${rotatedModels.length}: ${modelStr}`);
 
     try {
       const result = await handleSingleModel(body, modelStr);
+      const latency = Date.now() - tStart;
       
       // Success (2xx) - return response
       if (result.ok) {
         log.info("COMBO", `Model ${modelStr} succeeded`);
+        recordComboRequest(comboName, modelStr, true, latency, comboStrategy, i);
         return result;
       }
+
+      recordComboRequest(comboName, modelStr, false, latency, comboStrategy, i);
+      
+      // ... rest of error logic stays same ...
 
       // Extract error info from response
       let errorText = result.statusText || "";
