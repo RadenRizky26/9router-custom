@@ -21,10 +21,8 @@ function normalizeScopes(value) {
 
 export function getPublicOrigin(request) {
   const configuredBaseUrl =
-    (process.env.BASE_URL || "").trim().replace(/\
-/g, "") ||
-    (process.env.NEXT_PUBLIC_BASE_URL || "").trim().replace(/\
-/g, "") ||
+    (process.env.BASE_URL || "").trim().replace(/\r/g, "") ||
+    (process.env.NEXT_PUBLIC_BASE_URL || "").trim().replace(/\r/g, "") ||
     "";
 
   if (configuredBaseUrl) {
