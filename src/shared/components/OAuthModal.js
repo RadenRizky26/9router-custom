@@ -299,7 +299,14 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
       } else if (provider === "xai") {
         redirectUri = "http://127.0.0.1:56121/callback";
       } else {
-        redirectUri = `http://localhost:${appPort}/callback`;
+        if (process.env.NODE_ENV === "production") {
+          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || window.location.origin;
+          // Clean trailing slashes
+          const cleanBaseUrl = baseUrl.replace(/\/+$/, "");
+          redirectUri = `${cleanBaseUrl}/callback`;
+        } else {
+          redirectUri = `http://localhost:${appPort}/callback`;
+        }
       }
 
       // Build authorize URL first to get codeVerifier/state for codex server-side mode
