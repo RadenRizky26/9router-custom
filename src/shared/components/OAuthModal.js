@@ -292,19 +292,18 @@ export default function OAuthModal({ isOpen, provider, providerInfo, onSuccess, 
       }
 
       // Authorization code flow - build redirect URI (some providers require fixed ports)
-      const appPort = window.location.port || (window.location.protocol === "https:" ? "443" : "80");
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || window.location.origin;
+      const cleanBaseUrl = baseUrl.replace(/\/+$/, "");
       let redirectUri;
       if (provider === "codex") {
-        redirectUri = "http://localhost:1455/auth/callback";
+        redirectUri = `${cleanBaseUrl}/auth/callback`;
       } else if (provider === "xai") {
-        redirectUri = "http://127.0.0.1:56121/callback";
+        redirectUri = `${cleanBaseUrl}/callback`;
       } else {
         if (process.env.NODE_ENV === "production") {
-          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL || window.location.origin;
-          // Clean trailing slashes
-          const cleanBaseUrl = baseUrl.replace(/\/+$/, "");
           redirectUri = `${cleanBaseUrl}/callback`;
         } else {
+          const appPort = window.location.port || (window.location.protocol === "https:" ? "443" : "80");
           redirectUri = `http://localhost:${appPort}/callback`;
         }
       }

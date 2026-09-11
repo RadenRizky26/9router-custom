@@ -35,7 +35,8 @@ function CallbackContent() {
     // the popup against the well-known redirect_uri to phish the code).
     const expectedOrigins = [
       window.location.origin, // Same origin (for most providers)
-      "http://localhost:1455", // Codex specific port
+      // Allow the production domain as a fallback for OAuth callbacks
+      process.env.NEXT_PUBLIC_BASE_URL || window.location.origin,
     ];
 
     // Method 1: postMessage to opener (popup mode)

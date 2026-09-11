@@ -54,9 +54,14 @@ async function trySqlJs() {
 
 async function initAdapter() {
   ensureDirs();
-  // Order per runtime:
-  //   Bun:  bun:sqlite → sql.js
-  //   Node: better-sqlite3 → node:sqlite (≥22.5) → sql.js
+  // FORCE POSTGRES IF DATABASE_URL IS SET
+  if (process.env.DATABASE_URL) {
+    console.log("[DB] Using PostgreSQL via DATABASE_URL");
+    const { createPostgresAdapter } = await import("./adapters/postgresAdapter.js");
+    return await createPostgresAdapter(process.env.DATABASE_URL);
+  }
+  
+  // FALLBACK TO SQLITE
   let adapter = await tryBunSqlite();
   if (!adapter) adapter = await tryBetterSqlite();
   if (!adapter) adapter = await tryNodeSqlite();
